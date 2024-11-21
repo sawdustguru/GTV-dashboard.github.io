@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Clock</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #9E9C9B;
+    }
+
+    .clock-container {
+      background-color: black;
+      border: 5px solid white;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.5);
+      padding: 30px;
+    }
+
+    .clock {
+      font-family: 'arial', Courier, monospace;
+      font-size: 5em;
+      text-align: center;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="clock-container">
+    <div class="clock">
+      <div id="time"></div>
+    </div>
+  </div>
+  <script>
+    function updateTime() {
+      const now = new Date();
+
+      const time = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+
+      document.getElementById('time').textContent = time;
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html>

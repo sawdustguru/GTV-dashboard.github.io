@@ -1,0 +1,356 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Data Display</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            background-color: #9E9C9B;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
+
+        .content-container {
+            width: auto;
+            margin: 0 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 800px;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 1px;
+            text-align: left;
+        }
+
+        .bar {
+            height: 15px;
+            width: 200px;
+            margin: 2px 0;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 3px;
+            background-color: darkblue;
+            transform: translateX(-50%);
+        }
+
+        .black-indicator {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            width: 3px;
+            height: 100%;
+            background-color: black;
+        }
+
+        .column1 { width: 200px; }
+        .column2 { width: 200px; }
+        .column3 {
+            width: 200px;
+            background: linear-gradient(to right, red 0%, orange 35%, gold 45%, green 85%);
+            position: relative;
+            height: 20px;
+        }
+        .column4 { width: 200px; }
+
+        .percentage {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            padding-left: 5px;
+        }
+
+        .column-header {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .segment {
+            height: 100%;
+            float: left;
+            width: 50px; /* Fixed width for each segment */
+        }
+
+        .segment1 { background-color: red; }
+        .segment2 { background-color: orange; }
+        .segment3 { background-color: gold; }
+        .segment4 { background-color: green; }
+
+        td {
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        th, td {
+            font-family: Arial, sans-serif;
+            border: 2px solid black;
+            padding: 2px;
+        }
+
+        .new-gauge {
+            width: 800px;
+            height: 30px;
+            background: linear-gradient(to right, red 0%, orange 35%, gold 45%, green 85%);
+            position: relative;
+            border: 1px solid black;
+        }
+
+        .new-gauge .indicator {
+            height: 100%;
+            background-color: white;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .vertical-line {
+            position: absolute;
+            width: 5px;
+            height: 100%;
+            background-color: darkblue;
+            left: calc((var(--percentage) / 120) * 100% - 1.5px);
+            top: 0;
+        }
+    </style>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        window.onload = function () {
+            const table = document.getElementById('dataTable');
+            let totalPercentage = 0;
+            let rowCount = 0;
+
+            function fetchConfig() {
+                console.log('Fetching config.json...');
+                return fetch('config.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Config.json:', data);
+                        const apiKey = data.apiKey;
+                        const spreadsheetId = data.spreadsheetId;
+                        return { apiKey, spreadsheetId };
+                    })
+                    .catch(error => {
+                        console.error('Error fetching config:', error);
+                        throw error; // Propagate the error
+                    });
+            }
+
+            function loadGoogleSheetData(apiKey, spreadsheetId) {
+                console.log('Loading Google Sheet data...');
+                gapi.load('client:auth2', function () {
+                    gapi.client.init({
+                        apiKey: apiKey,
+                        discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+                        scope: 'https://www.googleapis.com/auth/spreadsheets.readonly'
+                    }).then(function () {
+                        console.log('Google API initialized successfully.');
+                        gapi.client.sheets.spreadsheets.values.get({
+                            spreadsheetId: spreadsheetId,
+                            range: 'pdi_hours2'
+                        }).then(function (response) {
+                            console.log('Google Sheet data loaded successfully:', response);
+                            const values = response.result.values.slice(1);
+                            console.log('Parsed values:', values); // Log parsed values
+                            parseGoogleSheetData(values);
+                        }).catch(function (error) {
+                            console.error('Error loading Google Sheet data:', error);
+                        });
+                    }).catch(function (error) {
+                        console.error('Error initializing gapi:', error);
+                    });
+                });
+            }
+
+            function parseGoogleSheetData(values) {
+                console.log('Parsing Google Sheet data...');
+                table.innerHTML = '';
+
+                const headerRow = document.createElement('tr');
+                const columnHeader1 = document.createElement('th');
+                columnHeader1.textContent = 'Name';
+                columnHeader1.classList.add('column-header');
+                headerRow.appendChild(columnHeader1);
+
+                const columnHeader2 = document.createElement('th');
+                columnHeader2.textContent = 'Billed Hours';
+                columnHeader2.classList.add('column-header');
+                headerRow.appendChild(columnHeader2);
+
+                const columnHeader4 = document.createElement('th');
+                columnHeader4.textContent = 'Bonus Progress';
+                columnHeader4.classList.add('column-header');
+                headerRow.appendChild(columnHeader4);
+
+                const columnHeader3 = document.createElement('th');
+                columnHeader3.textContent = 'YTD Efficiency';
+                columnHeader3.classList.add('column-header');
+                headerRow.appendChild(columnHeader3);
+
+                table.appendChild(headerRow);
+
+                // Inside the parseGoogleSheetData function
+
+        values.forEach(rowData => {
+            if (rowData[0]) {
+                const row = document.createElement('tr');
+                rowCount++;
+        
+                const cell1 = document.createElement('td');
+                cell1.textContent = rowData[0];
+                cell1.classList.add('column1');
+                row.appendChild(cell1);
+        
+                const cell2 = document.createElement('td');
+                const bar2 = document.createElement('div');
+                bar2.className = 'bar';
+                if (rowData[1] !== null && parseFloat(rowData[1]) !== 0) { // Check if the value is not null or 0
+                    setColorSegments(bar2, parseInt(rowData[1]));
+                    cell2.appendChild(bar2);
+                }
+                cell2.classList.add('column2');
+                row.appendChild(cell2);
+        
+                const cell4 = document.createElement('td');
+                cell4.classList.add('column4');
+                if (rowData[3] !== null && parseFloat(rowData[3]) !== 0) { // Check if the value is not null or 0
+                    const bar4 = document.createElement('div');
+                    bar4.className = 'bar';
+                    setColorSegmentsForGoalProgress(bar4, parseFloat(rowData[3])); // Use setColorSegmentsForGoalProgress for Goal Progress
+                    cell4.appendChild(bar4);
+                }
+                row.appendChild(cell4);
+        
+                const cell3 = document.createElement('td');
+                cell3.classList.add('column3');
+                const gauge = document.createElement('div');
+                gauge.className = 'bar';
+                const percentage = document.createElement('div');
+                percentage.className = 'percentage';
+                const percentageValue = parseFloat(rowData[2]) * 100;
+                totalPercentage += percentageValue;
+                percentage.textContent = percentageValue.toFixed(2) + '%';
+                gauge.appendChild(percentage);
+                const indicator = document.createElement('div');
+                indicator.className = 'indicator';
+                const indicatorPosition = Math.min(percentageValue, 150);
+                indicator.style.left = (indicatorPosition / 150) * 100 + '%';
+                gauge.appendChild(indicator);
+                cell3.appendChild(gauge);
+                row.appendChild(cell3);
+        
+                table.appendChild(row);
+            }
+        });
+
+
+                const averagePercentage = totalPercentage / rowCount;
+
+                const averageGaugeContainer = document.getElementById('averageGaugeContainer');
+                const averageGauge = document.getElementById('averageGauge');
+                const averageIndicator = document.createElement('div');
+                averageIndicator.style.width = averagePercentage + '%';
+                averageGauge.appendChild(averageIndicator);
+
+                const verticalLine = document.createElement('div');
+                verticalLine.className = 'vertical-line';
+                verticalLine.style.setProperty('--percentage', averagePercentage);
+                averageGauge.appendChild(verticalLine);
+
+                const averagePercentageDisplay = document.getElementById('averagePercentageDisplay');
+                averagePercentageDisplay.textContent = averagePercentage.toFixed(2) + '%';
+
+                console.log('Average percentage:', averagePercentage);
+            }
+
+            function setColorSegments(bar, value) {
+                if (value <= 10.99) {
+                    bar.innerHTML = '<div class="segment segment1"></div>';
+                } else if (value <= 21.99) {
+                    bar.innerHTML = '<div class="segment segment1"></div>' +
+                                     '<div class="segment segment2"></div>';
+                } else if (value <= 32.99) {
+                    bar.innerHTML = '<div class="segment segment1"></div>' +
+                                     '<div class="segment segment2"></div>' +
+                                     '<div class="segment segment3"></div>';
+                } else {
+                    bar.innerHTML = '<div class="segment segment1"></div>' +
+                                     '<div class="segment segment2"></div>' +
+                                     '<div class="segment segment3"></div>' +
+                                     '<div class="segment segment4"></div>';
+                }
+            }
+            function setColorSegmentsForGoalProgress(bar, value) {
+                if (value <= 0.25) {
+                    bar.innerHTML = '<div class="segment segment1"></div>';
+                } else if (value <= 0.50) {
+                    bar.innerHTML = '<div class="segment segment1"></div>' +
+                                     '<div class="segment segment2"></div>';
+                } else if (value <= 0.94) {
+                    bar.innerHTML = '<div class="segment segment1"></div>' +
+                                     '<div class="segment segment2"></div>' +
+                                     '<div class="segment segment3"></div>';
+                } else {
+                    bar.innerHTML = '<div class="segment segment1"></div>' +
+                                     '<div class="segment segment2"></div>' +
+                                     '<div class="segment segment3"></div>' +
+                                     '<div class="segment segment4"></div>';
+                }
+            }
+
+
+            fetchConfig()
+                .then(({ apiKey, spreadsheetId }) => {
+                    console.log('Config fetched successfully. API Key:', apiKey, 'Sheet ID:', spreadsheetId);
+                    loadGoogleSheetData(apiKey, spreadsheetId);
+                })
+                .catch(error => {
+                    console.error('Error fetching configuration:', error);
+                });
+        };
+    </script>
+
+</head>
+<body>
+    <div class="content-container">
+        <p><b>Technician Progress</b></p>
+        <table id="dataTable"></table>
+        <p>Billed Hours: Red = 1 - 11 hours  Orange = 12 - 22 hours Yellow = 23 - 33  Green = 33+ hours
+        <br>Bonus Progress: Percent to goal Green = 95%
+        <br>YTD Efficiency is the percentage of Billed Time to On-Premise time</p>
+        <p><b>Average Shop Efficiency:</b></p>
+        <div id="averageGaugeContainer">
+            <div id="averageGauge" class="new-gauge">
+                <div id="averagePercentageDisplay" class="percentage"></div>
+            </div>
+        </div>
+    </div>
+    <script src="refresh.js"></script>
+</body>
+</html>

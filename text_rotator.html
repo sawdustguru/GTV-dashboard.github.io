@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Rotator</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrolling */
+            box-sizing: border-box;
+        }
+        *, *::before, *::after {
+            box-sizing: inherit; /* Apply box-sizing to all elements */
+        }
+        body {
+            background-color: #9E9C9B; /* Set the desired background color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+        #text-rotator {
+            font-size: 58px;
+            font-family: Arial, sans-serif; /* Set font to Arial */
+            text-shadow: 0 0 5px #000000; /* Red text shadow */
+            color: red;
+            text-align: center; /* Center justify text */
+            margin: 0; /* Ensure no extra space is added around the text */
+        }
+    </style>
+</head>
+<body>
+    <div id="text-rotator"></div>
+    <script>
+        var textRotator = document.getElementById('text-rotator');
+        var index = 0;
+
+        function rotateText(texts) {
+            textRotator.textContent = texts[index];
+            index = (index + 1) % texts.length;
+        }
+
+        function fetchTexts(spreadsheetId, apiKey) {
+            gapi.client.init({
+                apiKey: apiKey,
+                discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+            }).then(function() {
+                return gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: spreadsheetId,
+                    range: 'rotator!A:A', // Assuming texts are in column A of Sheet1
+                });
+            }).then(function(response) {
+                var values = response.result.values;
+                var texts = values.map(function(row) {
+                    return row[0]; // Assuming each text is in a separate row
+                });
+                setInterval(function() {
+                    rotateText(texts);
+                }, 5000); // Change text every 5 seconds
+            }).catch(function(error) {
+                console.error('Error fetching data:', error);
+            });
+        }
+
+        // Load the Google Sheets API client
+        function init() {
+            fetch('config.json')
+            .then(response => response.json())
+            .then(config => {
+                fetchTexts(config.spreadsheetId, config.apiKey);
+            })
+            .catch(error => console.error('Error fetching config:', error));
+        }
+
+        // Load the Google API client library
+        function loadClient() {
+            gapi.load('client', init);
+        }
+
+        // Load the Google API client library asynchronously
+        (function() {
+            var script = document.createElement('script');
+            script.src = 'https://apis.google.com/js/api.js';
+            script.onload = loadClient;
+            document.body.appendChild(script);
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Countdown Timer</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #9E9C9B;
+    }
+
+    .clock-container {
+      background-color: black;
+      border: 5px solid white;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.5);
+      padding: 30px;
+    }
+
+    .clock {
+      font-family: 'arial', Courier, monospace;
+      font-size: 6.5em;
+      text-align: center;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="clock-container">
+    <div class="clock">
+      <div id="countdown"></div>
+    </div>
+  </div>
+  <script>
+    function updateCountdown() {
+      const now = new Date();
+      let endTime = new Date();
+
+      // Set endTime to 18:00 for 6:00 PM of the current day
+      endTime.setHours(17, 30, 0, 0); // 18:00:00.000
+
+      // If it's already past 6:00 PM, set the target to the next day
+      if (now > endTime) {
+        endTime.setDate(endTime.getDate() + 1);
+        endTime.setHours(18, 0, 0, 0);
+      }
+
+      const remainingTime = endTime - now;
+
+      // Convert remainingTime from milliseconds to hours, minutes, and seconds
+      let hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
+      let minutes = Math.floor((remainingTime / 1000 / 60) % 60);
+      let seconds = Math.floor((remainingTime / 1000) % 60);
+
+      // Add leading zero if necessary
+      hours = hours < 10 ? '0' + hours : hours;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      seconds = seconds < 10 ? '0' + seconds : seconds;
+
+      document.getElementById('countdown').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>

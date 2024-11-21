@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Dashboard</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        *, *::before, *::after {
+            box-sizing: inherit;
+        }
+
+        body {
+            display: flex;
+            flex-wrap: wrap;
+            overflow: hidden;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .iframe-container, .half-width-container {
+            border: 2px white;
+            margin: 2px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .half-width-container {
+            display: flex;
+            width: calc(100% - 4px);
+        }
+
+        .half-width-iframe {
+            flex: 1;
+            overflow: hidden;
+            border-right: 4px solid white; /* Add border on the right of the first half-width iframe container */
+        }
+
+        .half-width-iframe:last-child {
+            border-right: none; /* Remove border on the last half-width iframe container */
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+    <script>
+            // Define the function to refresh iframes
+            function refreshIframes() {
+                // Get all iframe elements
+                var iframes = document.querySelectorAll('iframe');
+    
+                // Loop through each iframe and reload its content
+                iframes.forEach(function(iframe) {
+                    iframe.contentWindow.location.reload(true);
+                });
+            }
+    
+            // Call the function initially to refresh iframes when the page loads
+            refreshIframes();
+    
+            // Set up a setInterval to call the function every hour (in milliseconds)
+            setInterval(refreshIframes, 15 * 60 * 1000); // 60 minutes * 60 seconds * 1000 milliseconds
+        </script>
+</head>
+<body>
+    <div class="column left-column">
+        <div class="iframe-container">
+            <iframe src="https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOm51bGwsImNlbnRlciI6Wy03OS45OSw0MC45NTRdLCJsb2NhdGlvbiI6bnVsbCwiem9vbSI6Ni4zMzY4NjA1NzkwNzM5MjQ1fSwiYW5pbWF0aW5nIjp0cnVlLCJiYXNlIjoic3RhbmRhcmQiLCJhcnRjYyI6ZmFsc2UsImNvdW50eSI6ZmFsc2UsImN3YSI6ZmFsc2UsInJmYyI6ZmFsc2UsInN0YXRlIjpmYWxzZSwibWVudSI6dHJ1ZSwic2hvcnRGdXNlZE9ubHkiOmZhbHNlLCJvcGFjaXR5Ijp7ImFsZXJ0cyI6MC44LCJsb2NhbCI6MC42LCJsb2NhbFN0YXRpb25zIjowLjgsIm5hdGlvbmFsIjowLjZ9fQ%3D%3D"></iframe>
+        </div>
+        <div class="iframe-container">
+            <iframe src="pdi_performance.html"></iframe>
+        </div>
+    </div>
+    <div class="column right-column">
+        <div class="half-width-container">
+            <div class="half-width-iframe">
+                <iframe src="clock.html"></iframe>
+            </div>
+            <div class="half-width-iframe">
+                <iframe src="safety.html"></iframe>
+            </div>
+        </div>
+        <div class="iframe-container">
+            <iframe src="text_rotator.html"></iframe>
+        </div>
+        <div class="iframe-container">
+            <iframe src="gauge.html"></iframe>
+        </div>
+    </div>
+</body>
+</html>
