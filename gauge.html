@@ -44,7 +44,7 @@
 
 <script>
 // API key from the Developer Console
-var API_KEY = 'AIzaSyCFvX56uc0WNPz2ZTJhpg7Q2pFOgZxt7-0'; // Replace with your API key
+var API_KEY = 'AIzaSyC_c3wZbmVnpxQarSQlIDv4sE7IJQuansU'; // Replace with your API key
 
 // Array of API discovery doc URLs for APIs used by the application
 var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
@@ -69,7 +69,7 @@ function initClient() {
 
 function fetchSheetData() {
     gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: '1Em_4WKvdHbWu5WR2HCkd4JRVFaTsjJsqPHqDPRj8Gxs', // Replace with your spreadsheet ID
+        spreadsheetId: '1zfYM5lKDgI2qnGs1Ky3gnwTBfDHZsgozVmmi2LGKG3Y', // Replace with your spreadsheet ID
         range: 'gauge_data1' // Update the range name
     }).then(function(response) {
         var range = response.result;
