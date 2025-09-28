@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,11 +46,11 @@
         .half-width-iframe {
             flex: 1;
             overflow: hidden;
-            border-right: 4px solid white; /* Add border on the right of the first half-width iframe container */
+            border-right: 4px solid white;
         }
 
         .half-width-iframe:last-child {
-            border-right: none; /* Remove border on the last half-width iframe container */
+            border-right: none;
         }
 
         iframe {
@@ -58,29 +59,12 @@
             border: none;
         }
     </style>
-    <script>
-        // Define the function to refresh iframes
-        function refreshIframes() {
-            // Get all iframe elements
-            var iframes = document.querySelectorAll('iframe');
-
-            // Loop through each iframe and reload its content
-            iframes.forEach(function(iframe) {
-                iframe.contentWindow.location.reload(true);
-            });
-        }
-
-        // Call the function initially to refresh iframes when the page loads
-        refreshIframes();
-
-        // Set up a setInterval to call the function every hour (in milliseconds)
-        setInterval(refreshIframes, 15 * 60 * 1000); // 60 minutes * 60 seconds * 1000 milliseconds
-    </script>
 </head>
 <body>
     <div class="column left-column">
         <div class="iframe-container">
-            <iframe src="https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJ3ZWF0aGVyIiwiY2VudGVyIjpbLTExMS42OTIsMzMuNDYyXSwibG9jYXRpb24iOlstMTExLjgzMiwzMy40MTVdLCJ6b29tIjo5LjkxNTY0OTI1NzYxMzk1NywibGF5ZXIiOiJicmVmX3FjZCJ9LCJhbmltYXRpbmciOmZhbHNlLCJiYXNlIjoic3RhbmRhcmQiLCJhcnRjYyI6ZmFsc2UsImNvdW50eSI6ZmFsc2UsImN3YSI6ZmFsc2UsInJmYyI6ZmFsc2UsInN0YXRlIjpmYWxzZSwibWVudSI6dHJ1ZSwic2hvcnRGdXNlZE9ubHkiOmZhbHNlLCJvcGFjaXR5Ijp7ImFsZXJ0cyI6MC44LCJsb2NhbCI6MC42LCJsb2NhbFN0YXRpb25zIjowLjgsIm5hdGlvbmFsIjowLjZ9fQ%3D%3D"></iframe>
+            <!-- Radar iframe with dynamic src -->
+            <iframe id="radar-frame" src=""></iframe>
         </div>
         <div class="iframe-container">
             <iframe src="performance.html"></iframe>
@@ -89,7 +73,7 @@
     <div class="column right-column">
         <div class="half-width-container">
             <div class="half-width-iframe">
-                <iframe src="countdown.html"></iframe>
+                <iframe src="clock.html"></iframe> <!-- Use clock or countdown -->
             </div>
             <div class="half-width-iframe">
                 <iframe src="safety.html"></iframe>
@@ -102,5 +86,42 @@
             <iframe src="gauge.html"></iframe>
         </div>
     </div>
+
+    <script>
+        // Fetch config.json
+        async function fetchConfig() {
+            try {
+                const response = await fetch('config.json');
+                if (!response.ok) throw new Error("Failed to load config.json");
+                return await response.json();
+            } catch (err) {
+                console.error("Error fetching config:", err);
+                return {};
+            }
+        }
+
+        // Refresh iframes
+        function refreshIframes() {
+            var iframes = document.querySelectorAll('iframe');
+            iframes.forEach(function(iframe) {
+                iframe.contentWindow.location.reload(true);
+            });
+        }
+
+        // Set up auto-refresh every 15 minutes
+        setInterval(refreshIframes, 15 * 60 * 1000);
+
+        // Load config and update radar iframe
+        fetchConfig().then(config => {
+            console.log("Loaded config:", config); // 👈 Logs everything from config.json
+            if (config.radarUrl) {
+                const radarFrame = document.getElementById('radar-frame');
+                radarFrame.src = config.radarUrl;
+                console.log("Radar URL set to:", config.radarUrl); // 👈 Confirms radar URL applied
+            } else {
+                console.warn("No radarUrl found in config.json");
+            }
+        });
+    </script>
 </body>
 </html>
