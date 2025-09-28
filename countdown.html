@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,28 +37,61 @@
       <div id="countdown"></div>
     </div>
   </div>
+
   <script>
+    let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let startHour = 9;   // default 9:00 AM
+    let startMinute = 0;
+    let endHour = 17;    // default 5:00 PM
+    let endMinute = 0;
+
+    async function fetchConfig() {
+      try {
+        const response = await fetch('config.json');
+        if (!response.ok) throw new Error("Failed to load config.json");
+        const config = await response.json();
+
+        console.log("Loaded config:", config);
+
+        if (config.timezone) timezone = config.timezone;
+        if (config.startHour !== undefined) startHour = config.startHour;
+        if (config.startMinute !== undefined) startMinute = config.startMinute;
+        if (config.endHour !== undefined) endHour = config.endHour;
+        if (config.endMinute !== undefined) endMinute = config.endMinute;
+      } catch (err) {
+        console.warn("Using default values:", {timezone, startHour, startMinute, endHour, endMinute}, err);
+      }
+    }
+
     function updateCountdown() {
       const now = new Date();
-      let endTime = new Date();
+      const localTime = new Date(now.toLocaleString("en-US", { timeZone: timezone }));
 
-      // Set endTime to 18:00 for 6:00 PM of the current day
-      endTime.setHours(17, 30, 0, 0); // 18:00:00.000
+      // Determine today's start and end times
+      let startTime = new Date(localTime);
+      startTime.setHours(startHour, startMinute, 0, 0);
 
-      // If it's already past 6:00 PM, set the target to the next day
-      if (now > endTime) {
-        endTime.setDate(endTime.getDate() + 1);
-        endTime.setHours(18, 0, 0, 0);
+      let endTime = new Date(localTime);
+      endTime.setHours(endHour, endMinute, 0, 0);
+
+      // Determine countdown target
+      let targetTime;
+      if (localTime < startTime) {
+        targetTime = startTime; // countdown to start
+      } else if (localTime > endTime) {
+        // countdown to next day's start
+        startTime.setDate(startTime.getDate() + 1);
+        targetTime = startTime;
+      } else {
+        targetTime = endTime; // countdown to end
       }
 
-      const remainingTime = endTime - now;
+      const remainingTime = targetTime - localTime;
 
-      // Convert remainingTime from milliseconds to hours, minutes, and seconds
       let hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
       let minutes = Math.floor((remainingTime / 1000 / 60) % 60);
       let seconds = Math.floor((remainingTime / 1000) % 60);
 
-      // Add leading zero if necessary
       hours = hours < 10 ? '0' + hours : hours;
       minutes = minutes < 10 ? '0' + minutes : minutes;
       seconds = seconds < 10 ? '0' + seconds : seconds;
@@ -65,8 +99,10 @@
       document.getElementById('countdown').textContent = `${hours}:${minutes}:${seconds}`;
     }
 
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+    fetchConfig().then(() => {
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+    });
   </script>
 </body>
 </html>
