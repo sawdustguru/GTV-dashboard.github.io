@@ -37,16 +37,38 @@
     </div>
   </div>
   <script>
+    let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // fallback to system
+
+    async function fetchConfig() {
+      try {
+        const response = await fetch('config.json');
+        if (!response.ok) throw new Error("Failed to load config.json");
+        const config = await response.json();
+        if (config.timezone) {
+          timezone = config.timezone;
+          console.log("Using timezone from config:", timezone);
+        }
+      } catch (err) {
+        console.warn("Using default system timezone:", timezone, err);
+      }
+    }
+
     function updateTime() {
       const now = new Date();
-
-      const time = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
-
+      const time = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZone: timezone
+      });
       document.getElementById('time').textContent = time;
     }
 
-    updateTime();
-    setInterval(updateTime, 1000);
+    // Load config first, then start clock
+    fetchConfig().then(() => {
+      updateTime();
+      setInterval(updateTime, 1000);
+    });
   </script>
 </body>
 </html>
