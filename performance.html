@@ -81,7 +81,10 @@
             transform: translateY(-50%);
             color: white;
             padding-left: 5px;
+            font-weight: normal;
+            font-size: 10.5px;
         }
+
 
         .column-header {
             text-align: center;
@@ -307,12 +310,12 @@
                 }
             }
             function setColorSegmentsForGoalProgress(bar, value) {
-                if (value <= 0.25) {
+                if (value <= 0.32) {
                     bar.innerHTML = '<div class="segment segment1"></div>';
-                } else if (value <= 0.50) {
+                } else if (value <= 0.64) {
                     bar.innerHTML = '<div class="segment segment1"></div>' +
                                      '<div class="segment segment2"></div>';
-                } else if (value <= 0.94) {
+                } else if (value <= 0.9499) {
                     bar.innerHTML = '<div class="segment segment1"></div>' +
                                      '<div class="segment segment2"></div>' +
                                      '<div class="segment segment3"></div>';
@@ -322,7 +325,16 @@
                                      '<div class="segment segment3"></div>' +
                                      '<div class="segment segment4"></div>';
                 }
+            
+                    // Add percentage label if the value is >= 0.90
+                if (value >= 0.90) {
+                    const percentageLabel = document.createElement('div');
+                    percentageLabel.className = 'percentage';
+                    percentageLabel.textContent = (value * 100).toFixed(2) + '%'; // Display the actual value
+                    bar.appendChild(percentageLabel);
+                }
             }
+
 
 
             fetchConfig()
@@ -342,7 +354,7 @@
          <p><b>Technician Progress</b></p>
         <table id="dataTable"></table>
         <p>Billed Hours: Red = 1 - 11 hours  Orange = 12 - 22 hours Yellow = 23 - 33  Green = 33+ hours
-        <br>Bonus Progress: Percent to goal Green = 95%
+        <br>Bonus Progress: Percentage displays at 90% - Green at 95%
         <br>YTD Efficiency is the percentage of Billed Time to On-Premise time</p>
         <p><b>Average Shop Efficiency:</b></p>
         <div id="averageGaugeContainer">
